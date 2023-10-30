@@ -13,9 +13,7 @@ from torchvision.utils import save_image
 from UNet import UNetTranslator
 from utils import analyze_image_pair, analyze_image_pair_rgb, analyze_image_pair_lab, compute_shadow_mask,\
     compute_shadow_mask_otsu
-
 import wandb
-wandb.init(project="DISTILL-NET-WSRD2-TEST-REPORT")
 
 
 os.environ['TORCH_HOME'] = "./loaded_models/"
@@ -39,7 +37,7 @@ if __name__ == '__main__':
     parser.add_argument("--decay_epoch", type=int, default=400, help="epoch from which to start lr decay")
     parser.add_argument("--decay_steps", type=int, default=4, help="number of step decays")
 
-    parser.add_argument("--n_cpu", type=int, default=16, help="number of cpu threads to use during batch generation")
+    parser.add_argument("--n_cpu", type=int, default=2, help="number of cpu threads to use during batch generation")
     parser.add_argument("--img_height", type=int, default=800, help="size of image height")
     parser.add_argument("--img_width", type=int, default=800, help="size of image width")
     parser.add_argument("--channels", type=int, default=3, help="number of image channels")
@@ -49,16 +47,19 @@ if __name__ == '__main__':
 
     parser.add_argument("--valid_checkpoint", type=int, default=1, help="checkpoint for validation")
     parser.add_argument("--save_checkpoint", type=int, default=100, help="checkpoint for visual inspection")
-    parser.add_argument("--model_dir", default="/local/checkpoints/DNSR-wsrd2",
-                        help="Path of destiantion directory for the trained models")
-    parser.add_argument("--image_dir", default="/local/results/DNSR-wsrd2",
-                        help="Path for the directory used to save the output test images")
+    parser.add_argument("--mask_weight", type=float, default=0.01, help="mask loss weight")
+    # GPT4建议在0.01和0.001之间；如果有很多阴影，opt.mask_weight 设置更高一些，若只需要轻微去除阴影，设置低一些。
+    # parser.add_argument("--model_dir", default="/local/checkpoints/DNSR-wsrd2",
+    #                     help="Path of destiantion directory for the trained models")
+    # parser.add_argument("--image_dir", default="/local/results/DNSR-wsrd2",
+    #                     help="Path for the directory used to save the output test images")
     opt = parser.parse_args()
-    print(opt)
+    wandb.init(project="小论文-DistillNet-WSRD-Report", config=vars(opt))
+    wandb.config.update(opt)
 
     print('CUDA: ', torch.cuda.is_available(), torch.cuda.device_count())
 
-    os.makedirs(opt.model_dir, exist_ok=True)
+    # os.makedirs(opt.model_dir, exist_ok=True)
 
     criterion_pixelwise = torch.nn.MSELoss()
     pl = PerceptualLossModule()
@@ -87,8 +88,8 @@ if __name__ == '__main__':
 
     Tensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
 
-    train_il = PairedImageSet('../NTIRE-SR/data/WSRD2', 'train', size=(opt.img_height, opt.img_width), use_mask=False, aug=True)
-    test_il = PairedImageSet('../NTIRE-SR/data/WSRD2', 'test', size=None, use_mask=False, aug=False)
+    train_il = PairedImageSet('../dataset', 'train', size=(opt.img_height, opt.img_width), use_mask=False, aug=True)
+    validation_il = PairedImageSet('../dataset', 'validation', size=None, use_mask=False, aug=False)
 
     dataloader = DataLoader(
         train_il,
@@ -99,7 +100,7 @@ if __name__ == '__main__':
     )
 
     val_dataloader = DataLoader(
-        test_il,
+        validation_il,
         batch_size=1,
         shuffle=False,
         num_workers=opt.n_cpu
@@ -177,7 +178,6 @@ if __name__ == '__main__':
             train_epoch_perc_loss += perceptual_loss.detach().item()
             train_epoch_mask_loss += mask_loss.detach().item()
 
-
         translator_train_loss.append(train_epoch_loss)
         translator_train_mask_loss.append(train_epoch_mask_loss)
         translator_train_perc_loss.append(train_epoch_perc_loss)
@@ -196,8 +196,8 @@ if __name__ == '__main__':
             with torch.no_grad():
                 translator = translator.eval()
 
-                if (epoch + 1) % opt.save_checkpoint == 0:
-                    os.makedirs("{}/{}".format(opt.image_dir, epoch + 1))
+                # if (epoch + 1) % opt.save_checkpoint == 0:
+                #     os.makedirs("{}/{}".format(opt.image_dir, epoch + 1))
 
                 for idx, (B_img, AB_mask, A_img) in enumerate(val_dataloader):
                     inp = Variable(A_img.type(Tensor))
@@ -262,15 +262,15 @@ if __name__ == '__main__':
                         img_real = inp.detach().data
                         img_gt = gt.detach().data
                         img_sample = torch.cat((img_real, img_synth, img_gt), dim=-1)
-                        save_image(img_sample, "{}/{}/{}_im.png".format(opt.image_dir, epoch + 1, idx + 1))
+                        save_image(img_sample, "./save_checkpoint/{}/{}_im.png".format(epoch + 1, idx + 1))
                         mask_sample = torch.cat((mask, compute_shadow_mask_otsu(inp, out)), dim=-1)
-                        save_image(mask_sample, "{}/{}/{}_mask.png".format(opt.image_dir, epoch + 1, idx + 1))
+                        save_image(mask_sample, "./save_checkpoint/{}/{}_mask.png".format(epoch + 1, idx + 1))
 
                 wandb.log({
-                     "valid_loss": valid_epoch_loss / len(test_il),
-                     "valid_mask": valid_mask_loss / len(test_il),
-                     "valid_pixelwise": valid_pix_loss / len(test_il),
-                     "valid_perceptual": valid_perc_loss / len(test_il)
+                     "valid_loss": valid_epoch_loss / len(validation_il),
+                     "valid_mask": valid_mask_loss / len(validation_il),
+                     "valid_pixelwise": valid_pix_loss / len(validation_il),
+                     "valid_perceptual": valid_perc_loss / len(validation_il)
                 })
 
                 translator_valid_loss.append(valid_epoch_loss)
@@ -307,6 +307,7 @@ if __name__ == '__main__':
                                                                                     lab_shpsnr_epoch, lab_fpsnr_epoch))
             if rmse_epoch < best_rmse and epoch > 0:
                 best_rmse = rmse_epoch
-                print("Saving checkpoint for {}".format(best_rmse))
-                torch.save(translator.cpu().state_dict(), "{}/gen_sh2f.pth".format(opt.model_dir))
-                torch.save(optimizer_G.state_dict(), "{}/optimizer_ABG.pth".format(opt.model_dir))
+                print("Saving checkpoint for epoch {} and RMSE {}".format(epoch + 1, best_rmse))
+                torch.save(translator.cpu().state_dict(), "./best_rmse_model/DistillNet_epoch{}.pth".format(epoch))
+                torch.save(optimizer_G.state_dict(), "./best_rmse_model/optimizer_epoch{}.pth".format(epoch))
+                wandb.config.update({"best_rmse": best_rmse}, allow_val_change=True)
