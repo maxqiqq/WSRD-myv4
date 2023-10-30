@@ -54,7 +54,7 @@ if __name__ == '__main__':
     # parser.add_argument("--image_dir", default="/local/results/DNSR-wsrd2",
     #                     help="Path for the directory used to save the output test images")
     opt = parser.parse_args()
-    wandb.init(project="小论文-DistillNet-WSRD-Report", config=vars(opt))
+    wandb.init(project="DistillNet-WSRD-Report", config=vars(opt))
     wandb.config.update(opt)
 
     print('CUDA: ', torch.cuda.is_available(), torch.cuda.device_count())
@@ -88,8 +88,8 @@ if __name__ == '__main__':
 
     Tensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
 
-    train_il = PairedImageSet('../dataset', 'train', size=(opt.img_height, opt.img_width), use_mask=False, aug=True)
-    validation_il = PairedImageSet('../dataset', 'validation', size=None, use_mask=False, aug=False)
+    train_il = PairedImageSet('./dataset', 'train', size=(opt.img_height, opt.img_width), use_mask=False, aug=True)
+    validation_il = PairedImageSet('./dataset', 'validation', size=None, use_mask=False, aug=False)
 
     dataloader = DataLoader(
         train_il,
