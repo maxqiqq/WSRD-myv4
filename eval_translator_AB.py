@@ -5,14 +5,14 @@ import torch
 from dconv_model import DistillNet
 from initializer import weights_init_normal
 from ImageLoaders import PairedImageSet
-from skimage.metrics import structural_similarity as ssim
+# from skimage.metrics import structural_similarity as ssim
 from torch.autograd import Variable
 from torch.nn.functional import interpolate
 from torch.utils.data import DataLoader
 from torchvision.utils import save_image
 from UNet import UNetTranslator
-from utils import analyze_image_pair, analyze_image_pair_rgb, analyze_image_pair_lab, compute_shadow_mask,\
-    compute_shadow_mask_otsu
+from utils import analyze_image_pair_rgb, compute_shadow_mask_otsu
+# analyze_image_pair, analyze_image_pair_lab, compute_shadow_mask,\
 
 def torch2numpy(img):
     return 255. * torch.clamp(img.squeeze(0).cpu().detach(), min=0, max=1).numpy().transpose((2, 1, 0)).astype(np.uint8)

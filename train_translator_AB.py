@@ -2,17 +2,17 @@ import argparse
 import os
 import torch
 from dconv_model import DistillNet
-from initializer import weights_init_normal
+# from initializer import weights_init_normal
 from ImageLoaders import PairedImageSet
-from loss import PerceptualLossModule, custom_mse_loss
+from loss import PerceptualLossModule # custom_mse_loss
 from torch.autograd import Variable
 from torch.nn.functional import interpolate
 from torch.optim.lr_scheduler import MultiStepLR
 from torch.utils.data import DataLoader
 from torchvision.utils import save_image
-from UNet import UNetTranslator
-from utils import analyze_image_pair, analyze_image_pair_rgb, analyze_image_pair_lab, compute_shadow_mask,\
-    compute_shadow_mask_otsu
+# from UNet import UNetTranslator
+# from utils import analyze_image_pair, analyze_image_pair_rgb, analyze_image_pair_lab, compute_shadow_mask, compute_shadow_mask_otsu
+from utils import analyze_image_pair_rgb, compute_shadow_mask_otsu
 import wandb
 
 
@@ -23,7 +23,7 @@ if __name__ == '__main__':
     # parse CLI arguments
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_type", type=int, default=2, help="[0]UNet [else]DistillNet")
+    # parser.add_argument("--model_type", type=int, default=2, help="[0]UNet [else]DistillNet")
     parser.add_argument("--fullres", type=int, default=1, help="[0]inference with hxwx3 [1]fullres inference")
 
     parser.add_argument("--n_epochs", type=int, default=600, help="number of epochs of training")
@@ -70,11 +70,11 @@ if __name__ == '__main__':
     else:
         device = "cpu"
 
-    if opt.model_type == 0:
-        translator = UNetTranslator(in_channels=3, out_channels=3)
-        translator.apply(weights_init_normal)
-    else:
-        translator = torch.nn.DataParallel(DistillNet(num_iblocks=6, num_ops=4))
+    # if opt.model_type == 0:
+    #     translator = UNetTranslator(in_channels=3, out_channels=3)
+    #     translator.apply(weights_init_normal)
+    # else:
+    translator = torch.nn.DataParallel(DistillNet(num_iblocks=6, num_ops=4))
 
     if cuda:
         print("USING CUDA FOR MODEL TRAINING")
@@ -109,20 +109,20 @@ if __name__ == '__main__':
     num_samples = len(dataloader)
     val_samples = len(val_dataloader)
 
-    translator_train_loss = []
-    translator_valid_loss = []
+    # translator_train_loss = []
+    # translator_valid_loss = []
+    #
+    #
+    # translator_train_mask_loss = []
+    # translator_valid_mask_loss = []
+    #
+    # translator_train_pix_loss = []
+    # translator_valid_pix_loss = []
+    #
+    # translator_train_perc_loss = []
+    # translator_valid_perc_loss = []
 
-
-    translator_train_mask_loss = []
-    translator_valid_mask_loss = []
-
-    translator_train_pix_loss = []
-    translator_valid_pix_loss = []
-
-    translator_train_perc_loss = []
-    translator_valid_perc_loss = []
-
-    best_rmse = 1e3
+    best_rmse = 15
 
     for epoch in range(opt.resume_epoch, opt.n_epochs):
         train_epoch_loss = 0
@@ -135,20 +135,20 @@ if __name__ == '__main__':
         valid_perc_loss = 0
         valid_pix_loss = 0
 
-        epoch_err = 0
-        epoch_p = 0
+        # epoch_err = 0
+        # epoch_p = 0
 
         rmse_epoch = 0
         psnr_epoch = 0
 
-        lab_rmse_epoch = 0
-        lab_psnr_epoch = 0
-
-        lab_shrmse_epoch = 0
-        lab_shpsnr_epoch = 0
-
-        lab_frmse_epoch = 0
-        lab_fpsnr_epoch = 0
+        # lab_rmse_epoch = 0
+        # # lab_psnr_epoch = 0
+        #
+        # lab_shrmse_epoch = 0
+        # # lab_shpsnr_epoch = 0
+        #
+        # lab_frmse_epoch = 0
+        # lab_fpsnr_epoch = 0
 
         translator = translator.cuda()
         translator = translator.train()
@@ -178,10 +178,10 @@ if __name__ == '__main__':
             train_epoch_perc_loss += perceptual_loss.detach().item()
             train_epoch_mask_loss += mask_loss.detach().item()
 
-        translator_train_loss.append(train_epoch_loss)
-        translator_train_mask_loss.append(train_epoch_mask_loss)
-        translator_train_perc_loss.append(train_epoch_perc_loss)
-        translator_train_pix_loss.append(train_epoch_pix_loss)
+        # translator_train_loss.append(train_epoch_loss)
+        # translator_train_mask_loss.append(train_epoch_mask_loss)
+        # translator_train_perc_loss.append(train_epoch_perc_loss)
+        # translator_train_pix_loss.append(train_epoch_pix_loss)
 
         wandb.log({
              "train_loss": train_epoch_loss / len(train_il),
@@ -237,25 +237,25 @@ if __name__ == '__main__':
 
                     rmse, psnr = analyze_image_pair_rgb(out.squeeze(0), gt.squeeze(0))
 
-                    rmse_lab, psnr_lab = analyze_image_pair_lab(out.squeeze(0), gt.squeeze(0))
-                    shrmse_lab, shpsnr_lab = analyze_image_pair_lab((out * mask).squeeze(0), (gt * mask).squeeze(0))
-                    frmse_lab, fpsnr_lab = analyze_image_pair_lab((out * (1 - mask)).squeeze(0), (gt * (1 - mask)).squeeze(0))
+                    # rmse_lab, psnr_lab = analyze_image_pair_lab(out.squeeze(0), gt.squeeze(0))
+                    # shrmse_lab, shpsnr_lab = analyze_image_pair_lab((out * mask).squeeze(0), (gt * mask).squeeze(0))
+                    # frmse_lab, fpsnr_lab = analyze_image_pair_lab((out * (1 - mask)).squeeze(0), (gt * (1 - mask)).squeeze(0))
 
-                    re, _ = analyze_image_pair(out.squeeze(0), gt.squeeze(0))
+                    # re, _ = analyze_image_pair(out.squeeze(0), gt.squeeze(0))
 
-                    epoch_err += re
+                    # epoch_err += re
 
                     rmse_epoch += rmse
                     psnr_epoch += psnr
 
-                    lab_rmse_epoch += rmse_lab
-                    lab_psnr_epoch += psnr_lab
+                    # lab_rmse_epoch += rmse_lab
+                    # lab_psnr_epoch += psnr_lab
 
-                    lab_shrmse_epoch += shrmse_lab
-                    lab_shpsnr_epoch += shpsnr_lab
+                    # lab_shrmse_epoch += shrmse_lab
+                    # lab_shpsnr_epoch += shpsnr_lab
 
-                    lab_frmse_epoch += frmse_lab
-                    lab_fpsnr_epoch += fpsnr_lab
+                    # lab_frmse_epoch += frmse_lab
+                    # lab_fpsnr_epoch += fpsnr_lab
 
                     if (epoch + 1) % opt.save_checkpoint == 0:
                         img_synth = out.detach().data
@@ -273,38 +273,37 @@ if __name__ == '__main__':
                      "valid_perceptual": valid_perc_loss / len(validation_il)
                 })
 
-                translator_valid_loss.append(valid_epoch_loss)
-                translator_valid_mask_loss.append(valid_mask_loss)
+                # translator_valid_loss.append(valid_epoch_loss)
+                # translator_valid_mask_loss.append(valid_mask_loss)
 
-                epoch_err /= val_samples
+                # epoch_err /= val_samples
 
                 rmse_epoch /= val_samples
                 psnr_epoch /= val_samples
 
-                lab_rmse_epoch /= val_samples
-                lab_psnr_epoch /= val_samples
+                # lab_rmse_epoch /= val_samples
+                # lab_psnr_epoch /= val_samples
 
-                lab_shrmse_epoch /= val_samples
-                lab_shpsnr_epoch /= val_samples
+                # lab_shrmse_epoch /= val_samples
+                # lab_shpsnr_epoch /= val_samples
 
-                lab_frmse_epoch /= val_samples
-                lab_fpsnr_epoch /= val_samples
+                # lab_frmse_epoch /= val_samples
+                # lab_fpsnr_epoch /= val_samples
 
             wandb.log({
-                "rmse": lab_rmse_epoch,
-                "sh_rmse": lab_shrmse_epoch,
-                "sf_rmse": lab_frmse_epoch,
+                "rmse": rmse_epoch,
+                "psnr": psnr_epoch,
 
             })
 
-            print("EPOCH: {} - GEN: {} | {} - MSK: {} | {} - RMSE {} | {} | {} | {} - PSNR - {} | {} | {} | {}".format(
+            print("EPOCH: {} - GEN: {} | {} - MSK: {} | {} - RMSE: {} - PSNR: {}".format(
                                                                                     epoch, train_epoch_loss,
                                                                                     valid_epoch_loss, train_epoch_mask_loss,
                                                                                     valid_mask_loss,
-                                                                                    rmse_epoch, lab_rmse_epoch,
-                                                                                    lab_shrmse_epoch, lab_frmse_epoch,
-                                                                                    psnr_epoch, lab_psnr_epoch,
-                                                                                    lab_shpsnr_epoch, lab_fpsnr_epoch))
+                                                                                    rmse_epoch, # lab_rmse_epoch,
+                                                                                    # lab_shrmse_epoch, lab_frmse_epoch,
+                                                                                    psnr_epoch))# lab_psnr_epoch,
+                                                                                    # lab_shpsnr_epoch, lab_fpsnr_epoch))
             if rmse_epoch < best_rmse and epoch > 0:
                 best_rmse = rmse_epoch
                 print("Saving checkpoint for epoch {} and RMSE {}".format(epoch + 1, best_rmse))
