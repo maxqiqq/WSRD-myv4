@@ -38,8 +38,8 @@ if __name__ == '__main__':
     parser.add_argument("--decay_steps", type=int, default=4, help="number of step decays")
 
     parser.add_argument("--n_cpu", type=int, default=2, help="number of cpu threads to use during batch generation")
-    parser.add_argument("--img_height", type=int, default=400, help="size of image height")
-    parser.add_argument("--img_width", type=int, default=400, help="size of image width")
+    parser.add_argument("--img_height", type=int, default=600, help="size of image height")
+    parser.add_argument("--img_width", type=int, default=600, help="size of image width")
     parser.add_argument("--channels", type=int, default=3, help="number of image channels")
 
     parser.add_argument("--pixelwise_weight", type=float, default=1.0, help="Pixelwise loss weight")
