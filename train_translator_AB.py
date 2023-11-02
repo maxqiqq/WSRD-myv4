@@ -26,7 +26,7 @@ if __name__ == '__main__':
     # parser.add_argument("--model_type", type=int, default=2, help="[0]UNet [else]DistillNet")
     parser.add_argument("--fullres", type=int, default=1, help="[0]inference with hxwx3 [1]fullres inference")
 
-    parser.add_argument("--n_epochs", type=int, default=600, help="number of epochs of training")
+    parser.add_argument("--n_epochs", type=int, default=300, help="number of epochs of training")
     parser.add_argument("--resume_epoch", type=int, default=0, help="epoch to resume training")
     parser.add_argument("--batch_size", type=int, default=2, help="size of the batches")
 
@@ -34,19 +34,19 @@ if __name__ == '__main__':
     parser.add_argument("--b1", type=float, default=0.5, help="adam: decay of first order momentum of gradient")
     parser.add_argument("--b2", type=float, default=0.999, help="adam: decay of first order momentum of gradient")
 
-    parser.add_argument("--decay_epoch", type=int, default=400, help="epoch from which to start lr decay")
+    parser.add_argument("--decay_epoch", type=int, default=130, help="epoch from which to start lr decay")
     parser.add_argument("--decay_steps", type=int, default=4, help="number of step decays")
 
     parser.add_argument("--n_cpu", type=int, default=2, help="number of cpu threads to use during batch generation")
-    parser.add_argument("--img_height", type=int, default=800, help="size of image height")
-    parser.add_argument("--img_width", type=int, default=800, help="size of image width")
+    parser.add_argument("--img_height", type=int, default=400, help="size of image height")
+    parser.add_argument("--img_width", type=int, default=400, help="size of image width")
     parser.add_argument("--channels", type=int, default=3, help="number of image channels")
 
     parser.add_argument("--pixelwise_weight", type=float, default=1.0, help="Pixelwise loss weight")
     parser.add_argument("--perceptual_weight", type=float, default=0.1, help="Perceptual loss weight")
 
     parser.add_argument("--valid_checkpoint", type=int, default=1, help="checkpoint for validation")
-    parser.add_argument("--save_checkpoint", type=int, default=100, help="checkpoint for visual inspection")
+    parser.add_argument("--save_checkpoint", type=int, default=50, help="checkpoint for visual inspection")
     parser.add_argument("--mask_weight", type=float, default=0.01, help="mask loss weight")
     # GPT4建议在0.01和0.001之间；如果有很多阴影，opt.mask_weight 设置更高一些，若只需要轻微去除阴影，设置低一些。
     # parser.add_argument("--model_dir", default="/local/checkpoints/DNSR-wsrd2",
@@ -122,7 +122,7 @@ if __name__ == '__main__':
     # translator_train_perc_loss = []
     # translator_valid_perc_loss = []
 
-    best_rmse = 15
+    best_rmse = 25
 
     for epoch in range(opt.resume_epoch, opt.n_epochs):
         train_epoch_loss = 0
