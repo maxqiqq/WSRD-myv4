@@ -88,7 +88,7 @@ if __name__ == '__main__':
 
     Tensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
 
-    train_il = PairedImageSet('./xiaolunwen-WSRD', 'train', size=(opt.img_height, opt.img_width), use_mask=False, aug=True)
+    train_il = PairedImageSet('./xiaolunwen-WSRD', 'train', size=(opt.img_height, opt.img_width), use_mask=False, aug=False)
     validation_il = PairedImageSet('./xiaolunwen-WSRD', 'validation', size=None, use_mask=False, aug=False)
 
     dataloader = DataLoader(
