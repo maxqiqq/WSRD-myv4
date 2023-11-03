@@ -258,6 +258,8 @@ if __name__ == '__main__':
                     # lab_fpsnr_epoch += fpsnr_lab
 
                     if (epoch + 1) % opt.save_checkpoint == 0:
+                        output_folder = "./save_checkpoint/{}/".format(epoch + 1)
+                        os.makedirs(output_folder)   
                         img_synth = out.detach().data
                         img_real = inp.detach().data
                         img_gt = gt.detach().data
