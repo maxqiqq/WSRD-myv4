@@ -45,8 +45,8 @@ if __name__ == '__main__':
     parser.add_argument("--pixelwise_weight", type=float, default=1.0, help="Pixelwise loss weight")
     parser.add_argument("--perceptual_weight", type=float, default=0.1, help="Perceptual loss weight")
 
-    parser.add_argument("--valid_checkpoint", type=int, default=1, help="checkpoint for validation")
-    parser.add_argument("--save_checkpoint", type=int, default=50, help="checkpoint for visual inspection")
+    parser.add_argument("--valid_checkpoint", type=int, default=2, help="checkpoint for validation")
+    parser.add_argument("--save_checkpoint", type=int, default=30, help="checkpoint for visual inspection")
     parser.add_argument("--mask_weight", type=float, default=0.01, help="mask loss weight")
     # GPT4建议在0.01和0.001之间；如果有很多阴影，opt.mask_weight 设置更高一些，若只需要轻微去除阴影，设置低一些。
     # parser.add_argument("--model_dir", default="/local/checkpoints/DNSR-wsrd2",
