@@ -28,7 +28,7 @@ if __name__ == '__main__':
 
     parser.add_argument("--n_epochs", type=int, default=300, help="number of epochs of training")
     parser.add_argument("--resume_epoch", type=int, default=0, help="epoch to resume training")
-    parser.add_argument("--batch_size", type=int, default=1, help="size of the batches")
+    parser.add_argument("--batch_size", type=int, default=2, help="size of the batches")
 
     parser.add_argument("--lr", type=float, default=0.0002, help="adam: learning rate")
     parser.add_argument("--b1", type=float, default=0.5, help="adam: decay of first order momentum of gradient")
@@ -122,7 +122,7 @@ if __name__ == '__main__':
     # translator_train_perc_loss = []
     # translator_valid_perc_loss = []
 
-    best_rmse = 27
+    best_rmse = 28
 
     for epoch in range(opt.resume_epoch, opt.n_epochs):
         train_epoch_loss = 0
