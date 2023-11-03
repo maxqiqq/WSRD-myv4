@@ -28,7 +28,7 @@ if __name__ == '__main__':
 
     parser.add_argument("--n_epochs", type=int, default=300, help="number of epochs of training")
     parser.add_argument("--resume_epoch", type=int, default=0, help="epoch to resume training")
-    parser.add_argument("--batch_size", type=int, default=2, help="size of the batches")
+    parser.add_argument("--batch_size", type=int, default=1, help="size of the batches")
 
     parser.add_argument("--lr", type=float, default=0.0002, help="adam: learning rate")
     parser.add_argument("--b1", type=float, default=0.5, help="adam: decay of first order momentum of gradient")
@@ -45,7 +45,7 @@ if __name__ == '__main__':
     parser.add_argument("--pixelwise_weight", type=float, default=1.0, help="Pixelwise loss weight")
     parser.add_argument("--perceptual_weight", type=float, default=0.1, help="Perceptual loss weight")
 
-    parser.add_argument("--valid_checkpoint", type=int, default=1, help="checkpoint for validation")
+    parser.add_argument("--valid_checkpoint", type=int, default=2, help="checkpoint for validation")
     parser.add_argument("--save_checkpoint", type=int, default=20, help="checkpoint for visual inspection")
     parser.add_argument("--mask_weight", type=float, default=0.01, help="mask loss weight")
     # GPT4建议在0.01和0.001之间；如果有很多阴影，opt.mask_weight 设置更高一些，若只需要轻微去除阴影，设置低一些。
@@ -122,7 +122,7 @@ if __name__ == '__main__':
     # translator_train_perc_loss = []
     # translator_valid_perc_loss = []
 
-    best_rmse = 28
+    best_rmse = 26.1
 
     for epoch in range(opt.resume_epoch, opt.n_epochs):
         train_epoch_loss = 0
