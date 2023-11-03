@@ -122,7 +122,7 @@ if __name__ == '__main__':
     # translator_train_perc_loss = []
     # translator_valid_perc_loss = []
 
-    best_rmse = 25
+    best_rmse = 27
 
     for epoch in range(opt.resume_epoch, opt.n_epochs):
         train_epoch_loss = 0
