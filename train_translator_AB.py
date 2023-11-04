@@ -27,7 +27,7 @@ if __name__ == '__main__':
     parser.add_argument("--fullres", type=int, default=1, help="[0]inference with hxwx3 [1]fullres inference")
 
     parser.add_argument("--n_epochs", type=int, default=300, help="number of epochs of training")
-    parser.add_argument("--resume_epoch", type=int, default=54, help="epoch to resume training")                  # 改！！！！！！！！！！！！！！！！！！！！！
+    parser.add_argument("--resume_epoch", type=int, default=112, help="epoch to resume training")                  # 改！！！！！！！！！！！！！！！！！！！！！
     parser.add_argument("--batch_size", type=int, default=1, help="size of the batches")
 
     parser.add_argument("--lr", type=float, default=0.0002, help="adam: learning rate")
@@ -37,7 +37,7 @@ if __name__ == '__main__':
     parser.add_argument("--decay_epoch", type=int, default=130, help="epoch from which to start lr decay")
     parser.add_argument("--decay_steps", type=int, default=4, help="number of step decays")
 
-    parser.add_argument("--n_cpu", type=int, default=2, help="number of cpu threads to use during batch generation")
+    parser.add_argument("--n_cpu", type=int, default=6, help="number of cpu threads to use during batch generation")
     parser.add_argument("--img_height", type=int, default=800, help="size of image height")
     parser.add_argument("--img_width", type=int, default=800, help="size of image width")
     parser.add_argument("--channels", type=int, default=3, help="number of image channels")
@@ -46,7 +46,7 @@ if __name__ == '__main__':
     parser.add_argument("--perceptual_weight", type=float, default=0.1, help="Perceptual loss weight")
 
     parser.add_argument("--valid_checkpoint", type=int, default=2, help="checkpoint for validation")
-    parser.add_argument("--save_checkpoint", type=int, default=20, help="checkpoint for visual inspection")
+    parser.add_argument("--save_checkpoint", type=int, default=75, help="checkpoint for visual inspection")
     parser.add_argument("--mask_weight", type=float, default=0.01, help="mask loss weight")
     # GPT4建议在0.01和0.001之间；如果有很多阴影，opt.mask_weight 设置更高一些，若只需要轻微去除阴影，设置低一些。
     # parser.add_argument("--model_dir", default="/local/checkpoints/DNSR-wsrd2",
@@ -68,12 +68,12 @@ if __name__ == '__main__':
     else:
         device = "cpu"
 
-    translator = torch.nn.DataParallel(DistillNet(num_iblocks=6, num_ops=4))
-    optimizer_G = torch.optim.Adam(translator.parameters(), lr=opt.lr, betas=(opt.b1, opt.b2))      # 会被之后的覆盖掉，所以重复，可以注释！！！！！！！！！！！！！！！！！！！！！
+    # translator = torch.nn.DataParallel(DistillNet(num_iblocks=6, num_ops=4))
+    # optimizer_G = torch.optim.Adam(translator.parameters(), lr=opt.lr, betas=(opt.b1, opt.b2))      # 会被之后的覆盖掉，所以重复，可以注释！！！！！！！！！！！！！！！！！！！！！
 
     if opt.resume_epoch > 0:
-        translator.load_state_dict(torch.load("./best_rmse_model/DistillNet_epoch53.pth"))    # 改！！！！！！！！！！！！！！！！！！！！！
-        optimizer_G.load_state_dict(torch.load("./best_rmse_model/optimizer_epoch53.pth"))    # 改！！！！！！！！！！！！！！！！！！！！！
+        translator.load_state_dict(torch.load("./best_rmse_model/DistillNet_epoch111.pth"))    # 改！！！！！！！！！！！！！！！！！！！！！
+        optimizer_G.load_state_dict(torch.load("./best_rmse_model/optimizer_epoch111.pth"))    # 改！！！！！！！！！！！！！！！！！！！！！
     
     if cuda:
         print("USING CUDA FOR MODEL TRAINING")
@@ -120,7 +120,7 @@ if __name__ == '__main__':
     # translator_train_perc_loss = []
     # translator_valid_perc_loss = []
 
-    best_rmse = 22
+    best_rmse = 22.3
 
     for epoch in range(opt.resume_epoch, opt.n_epochs):
         train_epoch_loss = 0
@@ -313,3 +313,7 @@ if __name__ == '__main__':
                 torch.save(translator.cpu().state_dict(), "./best_rmse_model/DistillNet_epoch{}.pth".format(epoch))
                 torch.save(optimizer_G.state_dict(), "./best_rmse_model/optimizer_epoch{}.pth".format(epoch))
             wandb.config.update({"best_rmse": best_rmse}, allow_val_change=True)
+
+            if (epoch - 111) % 50 == 0:
+                torch.save(translator.cpu().state_dict(), "./best_rmse_model/DistillNet_{}.pth".format(epoch))
+                torch.save(optimizer_G.state_dict(), "./best_rmse_model/optimizer_{}.pth".format(epoch))
