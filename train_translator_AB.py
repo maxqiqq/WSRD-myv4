@@ -120,7 +120,7 @@ if __name__ == '__main__':
     # translator_train_perc_loss = []
     # translator_valid_perc_loss = []
 
-    best_rmse = 22.3
+    best_rmse = 22.5
 
     for epoch in range(opt.resume_epoch, opt.n_epochs):
         train_epoch_loss = 0
@@ -263,10 +263,10 @@ if __name__ == '__main__':
                         img_real = inp.detach().data
                         img_gt = gt.detach().data
                         img_sample = torch.cat((img_real, img_synth, img_gt), dim=-1)
-                        torch.save(img_sample, "./save_checkpoint/{}/{}_im.png".format(epoch, idx))
+                        torch.save(img_sample, "./save_checkpoint/{}{}_im.png".format(epoch, idx))
                         # save_image(img_sample, "./save_checkpoint/{}/{}_im.png".format(epoch + 1, idx + 1))
                         mask_sample = torch.cat((mask, compute_shadow_mask_otsu(inp, out)), dim=-1)
-                        torch.save(mask_sample, "./save_checkpoint/{}/{}_mask.png".format(epoch, idx))
+                        torch.save(mask_sample, "./save_checkpoint/{}{}_mask.png".format(epoch, idx))
                         # save_image(mask_sample, "./save_checkpoint/{}/{}_mask.png".format(epoch + 1, idx + 1))
 
                 wandb.log({
