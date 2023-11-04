@@ -27,7 +27,7 @@ if __name__ == '__main__':
     parser.add_argument("--fullres", type=int, default=1, help="[0]inference with hxwx3 [1]fullres inference")
 
     parser.add_argument("--n_epochs", type=int, default=300, help="number of epochs of training")
-    parser.add_argument("--resume_epoch", type=int, default=0, help="epoch to resume training")                  # ！！！！！！！！！！！！！！！！！！！！！！
+    parser.add_argument("--resume_epoch", type=int, default=0, help="epoch to resume training")                  #改！！！！！！！！！！！！！！！！！！！！！
     parser.add_argument("--batch_size", type=int, default=1, help="size of the batches")
 
     parser.add_argument("--lr", type=float, default=0.0002, help="adam: learning rate")
@@ -69,25 +69,22 @@ if __name__ == '__main__':
         device = "cpu"
 
     translator = torch.nn.DataParallel(DistillNet(num_iblocks=6, num_ops=4))
+    optimizer_G = torch.optim.Adam(translator.parameters(), lr=opt.lr, betas=(opt.b1, opt.b2))      #会被之后的覆盖掉，所以重复，可以注释！！！！！！！！！！！！！！！！！！！！！
 
+    if opt.resume_epoch > 0:
+    translator.load_state_dict(torch.load("./best_rmse_model/DistillNet_epoch{}.pth"))    #改！！！！！！！！！！！！！！！！！！！！！
+    optimizer_G.load_state_dict(torch.load("./best_rmse_model/optimizer_epoch{}.pth"))    #改！！！！！！！！！！！！！！！！！！！！！
+    
     if cuda:
         print("USING CUDA FOR MODEL TRAINING")
         translator.cuda()
         criterion_pixelwise.cuda()
 
-    optimizer_G = torch.optim.Adam(translator.parameters(), lr=opt.lr, betas=(opt.b1, opt.b2))
     decay_step = (opt.n_epochs - opt.decay_epoch) // opt.decay_steps
     milestones = [me for me in range(opt.decay_epoch, opt.n_epochs, decay_step)]
     scheduler = MultiStepLR(optimizer_G, milestones=milestones, gamma=0.5)
 
     Tensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
-
-    # 如果保存了就注释掉下面！！！！！！
-
-    # if os.path.exists("./best_rmse_model/DistillNet_epoch{}.pth"):
-    #     translator.load_state_dict(torch.load("./best_rmse_model/DistillNet_epoch{}.pth")) # ！！！！！！！！！
-    # if os.path.exists("./best_rmse_model/optimizer_epoch{}.pth"):
-    #     optimizer_G.load_state_dict(torch.load("./best_rmse_model/optimizer_epoch{}.pth")) # ！！！！！！！！
 
     train_il = PairedImageSet('./xiaolunwen-WSRD', 'train', size=(opt.img_height, opt.img_width), use_mask=False, aug=False)
     validation_il = PairedImageSet('./xiaolunwen-WSRD', 'validation', size=None, use_mask=False, aug=False)
