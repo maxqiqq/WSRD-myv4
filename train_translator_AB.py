@@ -72,8 +72,8 @@ if __name__ == '__main__':
     optimizer_G = torch.optim.Adam(translator.parameters(), lr=opt.lr, betas=(opt.b1, opt.b2))      # 会被之后的覆盖掉，所以重复，可以注释！！！！！！！！！！！！！！！！！！！！！
 
     if opt.resume_epoch > 0:
-    translator.load_state_dict(torch.load("./best_rmse_model/DistillNet_epoch53.pth"))    # 改！！！！！！！！！！！！！！！！！！！！！
-    optimizer_G.load_state_dict(torch.load("./best_rmse_model/optimizer_epoch53.pth"))    # 改！！！！！！！！！！！！！！！！！！！！！
+        translator.load_state_dict(torch.load("./best_rmse_model/DistillNet_epoch53.pth"))    # 改！！！！！！！！！！！！！！！！！！！！！
+        optimizer_G.load_state_dict(torch.load("./best_rmse_model/optimizer_epoch53.pth"))    # 改！！！！！！！！！！！！！！！！！！！！！
     
     if cuda:
         print("USING CUDA FOR MODEL TRAINING")
@@ -309,7 +309,7 @@ if __name__ == '__main__':
                                                                                     # lab_shpsnr_epoch, lab_fpsnr_epoch))
             if rmse_epoch < best_rmse and epoch > 0:
                 best_rmse = rmse_epoch
-                print("Saving checkpoint for epoch {} and RMSE {}".format(epoch + 1, best_rmse))
+                print("Saving checkpoint for epoch {} and RMSE {}".format(epoch, best_rmse))
                 torch.save(translator.cpu().state_dict(), "./best_rmse_model/DistillNet_epoch{}.pth".format(epoch))
                 torch.save(optimizer_G.state_dict(), "./best_rmse_model/optimizer_epoch{}.pth".format(epoch))
             wandb.config.update({"best_rmse": best_rmse}, allow_val_change=True)
