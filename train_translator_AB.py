@@ -68,8 +68,8 @@ if __name__ == '__main__':
     else:
         device = "cpu"
 
-    # translator = torch.nn.DataParallel(DistillNet(num_iblocks=6, num_ops=4))
-    # optimizer_G = torch.optim.Adam(translator.parameters(), lr=opt.lr, betas=(opt.b1, opt.b2))      # 会被之后的覆盖掉，所以重复，可以注释！！！！！！！！！！！！！！！！！！！！！
+    translator = torch.nn.DataParallel(DistillNet(num_iblocks=6, num_ops=4))
+    optimizer_G = torch.optim.Adam(translator.parameters(), lr=opt.lr, betas=(opt.b1, opt.b2))     
 
     if opt.resume_epoch > 0:
         translator.load_state_dict(torch.load("./best_rmse_model/DistillNet_epoch111.pth"))    # 改！！！！！！！！！！！！！！！！！！！！！
