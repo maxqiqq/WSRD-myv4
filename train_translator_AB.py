@@ -265,6 +265,7 @@ if __name__ == '__main__':
                         img_sample = torch.cat((img_real, img_synth, img_gt), dim=-1)
                         # torch.save(img_sample, "./save_checkpoint/{}{}_im.png".format(epoch, idx))
                         save_image(img_sample, "./save_checkpoint/{}/{}_im.png".format(epoch, idx))
+                        save_image(img_synth, "./save_checkpoint/{}/{}_output.png".format(epoch, idx))
                         mask_sample = torch.cat((mask, compute_shadow_mask_otsu(inp, out)), dim=-1)
                         # torch.save(mask_sample, "./save_checkpoint/{}{}_mask.png".format(epoch, idx))
                         save_image(mask_sample, "./save_checkpoint/{}/{}_mask.png".format(epoch, idx))
