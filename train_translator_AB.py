@@ -9,7 +9,7 @@ from torch.autograd import Variable
 from torch.nn.functional import interpolate
 from torch.optim.lr_scheduler import MultiStepLR
 from torch.utils.data import DataLoader
-# from torchvision.utils import save_image
+from torchvision.utils import save_image
 # from UNet import UNetTranslator
 # from utils import analyze_image_pair, analyze_image_pair_rgb, analyze_image_pair_lab, compute_shadow_mask, compute_shadow_mask_otsu
 from utils import analyze_image_pair_rgb, compute_shadow_mask_otsu
@@ -27,7 +27,7 @@ if __name__ == '__main__':
     parser.add_argument("--fullres", type=int, default=1, help="[0]inference with hxwx3 [1]fullres inference")
 
     parser.add_argument("--n_epochs", type=int, default=300, help="number of epochs of training")
-    parser.add_argument("--resume_epoch", type=int, default=112, help="epoch to resume training")                  # 改！！！！！！！！！！！！！！！！！！！！！
+    parser.add_argument("--resume_epoch", type=int, default=262, help="epoch to resume training")                  # 改！！！！！！！！！！！！！！！！！！！！！
     parser.add_argument("--batch_size", type=int, default=1, help="size of the batches")
 
     parser.add_argument("--lr", type=float, default=0.0002, help="adam: learning rate")
@@ -45,8 +45,8 @@ if __name__ == '__main__':
     parser.add_argument("--pixelwise_weight", type=float, default=1.0, help="Pixelwise loss weight")
     parser.add_argument("--perceptual_weight", type=float, default=0.1, help="Perceptual loss weight")
 
-    parser.add_argument("--valid_checkpoint", type=int, default=2, help="checkpoint for validation")
-    parser.add_argument("--save_checkpoint", type=int, default=60, help="checkpoint for visual inspection")
+    parser.add_argument("--valid_checkpoint", type=int, default=1, help="checkpoint for validation")
+    parser.add_argument("--save_checkpoint", type=int, default=1, help="checkpoint for visual inspection")
     parser.add_argument("--mask_weight", type=float, default=0.01, help="mask loss weight")
     # GPT4建议在0.01和0.001之间；如果有很多阴影，opt.mask_weight 设置更高一些，若只需要轻微去除阴影，设置低一些。
     # parser.add_argument("--model_dir", default="/local/checkpoints/DNSR-wsrd2",
@@ -72,8 +72,8 @@ if __name__ == '__main__':
     optimizer_G = torch.optim.Adam(translator.parameters(), lr=opt.lr, betas=(opt.b1, opt.b2))     
 
     if opt.resume_epoch > 0:
-        translator.load_state_dict(torch.load("./best_rmse_model/DistillNet_epoch111.pth"))    # 改！！！！！！！！！！！！！！！！！！！！！
-        optimizer_G.load_state_dict(torch.load("./best_rmse_model/optimizer_epoch111.pth"))    # 改！！！！！！！！！！！！！！！！！！！！！
+        translator.load_state_dict(torch.load("./best_rmse_model/DistillNet_261.pth"))    # 改！！！！！！！！！！！！！！！！！！！！！
+        optimizer_G.load_state_dict(torch.load("./best_rmse_model/optimizer_261.pth"))    # 改！！！！！！！！！！！！！！！！！！！！！
     
     if cuda:
         print("USING CUDA FOR MODEL TRAINING")
@@ -120,7 +120,7 @@ if __name__ == '__main__':
     # translator_train_perc_loss = []
     # translator_valid_perc_loss = []
 
-    best_rmse = 22.5
+    best_rmse = 22.3
 
     for epoch in range(opt.resume_epoch, opt.n_epochs):
         train_epoch_loss = 0
@@ -256,18 +256,18 @@ if __name__ == '__main__':
                     # lab_fpsnr_epoch += fpsnr_lab
 
                     if (epoch + 1) % opt.save_checkpoint == 0:
-                        # output_folder = "./save_checkpoint/{}/".format(epoch + 1)
-                        # if not os.path.exists(output_folder):
-                        #     os.makedirs(output_folder)
+                        output_folder = "./save_checkpoint/{}/".format(epoch)
+                        if not os.path.exists(output_folder):
+                            os.makedirs(output_folder)
                         img_synth = out.detach().data
                         img_real = inp.detach().data
                         img_gt = gt.detach().data
                         img_sample = torch.cat((img_real, img_synth, img_gt), dim=-1)
-                        torch.save(img_sample, "./save_checkpoint/{}{}_im.png".format(epoch, idx))
-                        # save_image(img_sample, "./save_checkpoint/{}/{}_im.png".format(epoch + 1, idx + 1))
+                        # torch.save(img_sample, "./save_checkpoint/{}{}_im.png".format(epoch, idx))
+                        save_image(img_sample, "./save_checkpoint/{}/{}_im.png".format(epoch, idx))
                         mask_sample = torch.cat((mask, compute_shadow_mask_otsu(inp, out)), dim=-1)
-                        torch.save(mask_sample, "./save_checkpoint/{}{}_mask.png".format(epoch, idx))
-                        # save_image(mask_sample, "./save_checkpoint/{}/{}_mask.png".format(epoch + 1, idx + 1))
+                        # torch.save(mask_sample, "./save_checkpoint/{}{}_mask.png".format(epoch, idx))
+                        save_image(mask_sample, "./save_checkpoint/{}/{}_mask.png".format(epoch, idx))
 
                 wandb.log({
                      "valid_loss": valid_epoch_loss / len(validation_il),
